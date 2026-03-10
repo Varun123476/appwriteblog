@@ -5,10 +5,13 @@ import databaseService from "../appwrite/config";
 
 
 
-function PostCard({ $id, title, featuredImage, status, userId }) {
+function PostCard({ $id, title, featuredImage, status, slug }) {
+
+  
+  
   return (
     <Link
-      to={`/post/${$id}`}
+      to={`/post/${slug}`}
       className="group block rounded-xl overflow-hidden border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
     >
       {/* Cover image */}

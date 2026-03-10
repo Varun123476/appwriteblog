@@ -15,46 +15,48 @@ export class Service {
     this.storage = new Storage(this.client);
   }
 
-  async createPost({slug, title, content, featuredImage, status, userId }) {
-    try {
-      return await this.tablesDB.createRow({
-        databaseId: conf.appwriteDataBaseId,
-        tableId: conf.appwriteCollectionId, // FIXED
-        rowId: slug,
-        data: { title, content, featuredImage, status, userId },
-      });
-    } catch (error) {
-      console.error("Service :: createPost :: error", error);
-      throw error;
-    }
+  async createPost({ slug, title, content, featuredImage, status, userId }) {
+  try {
+    return await this.tablesDB.createRow({
+      databaseId: conf.appwriteDataBaseId,
+      tableId: conf.appwriteCollectionId,
+      rowId: ID.unique(),
+      data: { slug, title, content, featuredImage, status, userId },
+    });
+  } catch (error) {
+    console.error("Service :: createPost :: error", error);
+    throw error;
   }
+}
 
-  async updatePost(slug, data) {
-    try {
-      return await this.tablesDB.updateRow({
-        databaseId: conf.appwriteDataBaseId,
-        tableId: conf.appwriteCollectionId,
-        rowId: slug,
-        data,
-      });
-    } catch (error) {
-      console.error("Service :: updatePost :: error", error);
-      throw error;
-    }
+ async updatePost(rowId, data) {
+  try {
+    return await this.tablesDB.updateRow({
+      databaseId: conf.appwriteDataBaseId,
+      tableId: conf.appwriteCollectionId,
+      rowId: rowId,
+      data,
+    });
+  } catch (error) {
+    console.error("Service :: updatePost :: error", error);
+    throw error;
   }
+}
 
-  async getPost(slug) {
-    try {
-      return await this.tablesDB.getRow({
-        databaseId: conf.appwriteDataBaseId,
-        tableId: conf.appwriteCollectionId,
-        rowId: slug,
-      });
-    } catch (error) {
-      console.error("Service :: getPost :: error", error);
-      return false;
-    }
+ async getPost(slug) {
+  try {
+    const response = await this.tablesDB.listRows({
+      databaseId: conf.appwriteDataBaseId,
+      tableId: conf.appwriteCollectionId,
+      queries: [Query.equal("slug", slug)],
+    });
+
+    return response.rows[0];
+  } catch (error) {
+    console.error("Service :: getPost :: error", error);
+    return false;
   }
+}
 
   async deletePost(slug) {
     try {

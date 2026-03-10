@@ -14,11 +14,14 @@ function Home() {
   useEffect(() => {
     databaseService
       .getPosts()
-      .then((res) => setPosts(res.rows))
+      .then((res) => (
+        setPosts(res.rows)
+      ))
       .catch(() => setError("Could not load posts. Please try again."))
       .finally(() => setLoading(false));
   }, []);
 
+ 
   // ── Loading skeleton ─────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -85,7 +88,7 @@ function Home() {
       </div>
     );
   }
-
+  
   // ── Feed ─────────────────────────────────────────────────────────────────
   return (
     <section>

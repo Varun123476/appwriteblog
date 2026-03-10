@@ -29,7 +29,7 @@ function PostForm({ post }) {
   } = useForm({
     defaultValues: {
       title:         post?.title         ?? "",
-      slug:          post?.$id           ?? "",
+      slug:          post?.slug          ?? "",
       content:       post?.content       ?? "",
       status:        post?.status        ?? "active",
       featuredImage: post?.featuredImage ?? "",
@@ -54,38 +54,50 @@ function PostForm({ post }) {
     }
   }, [watchTitle, isEditing, setValue, slugTransform]);
 
+  
+
   // ─── Submit ──────────────────────────────────────────────────────────────
-  const onSubmit = async (data) => {
-    try {
-      let featuredImageId = data.featuredImage;
+const onSubmit = async (data) => {
+  try {
+    const { image, ...postData } = data;
 
-      // Upload new image if a File object was selected
-      if (data.image?.[0]) {
-        const uploaded = await databaseService.uploadFile(data.image[0]);
-        featuredImageId = uploaded.$id;
+    let featuredImageId = post?.featuredImage;
 
-        // Clean up old image when editing
-        if (isEditing && post.featuredImage) {
+    // Upload new image if selected
+    if (image?.[0]) {
+      const file = await databaseService.uploadFile(image[0]);
+
+      if (file) {
+        featuredImageId = file.$id;
+
+        if (post?.featuredImage) {
           await databaseService.deleteFile(post.featuredImage);
         }
       }
-
-      if (isEditing) {
-        const updated = await databaseService.updatePost(post.$id ,{...data, featuredImage: featuredImageId})
-        if (updated) navigate(`/post/${updated.$id}`);
-      } else {
-        const created = await databaseService.createPost({
-          ...data,
-          featuredImage: featuredImageId,
-          userId: userData.$id,
-        })
-        
-        if (created) navigate(`/post/${created.$id}`);
-      }
-    } catch (error) {
-      console.error("PostForm :: onSubmit ::", error);
     }
-  };
+
+    // Final data sent to DB
+    const payload = {
+      ...postData,
+      featuredImage: featuredImageId,
+    };
+
+    if (isEditing) {
+      const updated = await databaseService.updatePost(post.$id, payload);
+      if (updated) navigate(`/post/${updated.slug}`);
+    } else {
+      const created = await databaseService.createPost({
+        ...payload,
+        userId: userData.$id,
+      });
+
+      if (created) navigate(`/post/${created.slug}`);
+    }
+
+  } catch (error) {
+    console.error("PostForm :: onSubmit ::", error);
+  }
+};
 
 
   return (
